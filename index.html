@@ -15,116 +15,79 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            padding: 0;
         }
 
-        .container {
+        .header {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 1200px;
-            width: 100%;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         h1 {
             color: #667eea;
-            margin-bottom: 30px;
-            font-size: 2.5em;
+            font-size: 2em;
+            margin-bottom: 20px;
         }
 
-        .song-info {
-            margin: 30px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .document-url {
-            color: #666;
-            font-size: 0.9em;
-            word-break: break-all;
-            margin-top: 10px;
-        }
-
-        .player-container {
-            margin: 30px 0;
-        }
-
-        .not-found {
-            color: #e74c3c;
-            padding: 20px;
-            background: #ffe5e5;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .link-button, button.link-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 24px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: background 0.3s;
-            border: none;
-            cursor: pointer;
-            font-size: 1em;
-            font-family: inherit;
-        }
-
-        .link-button:hover, button.link-button:hover {
-            background: #5568d3;
-        }
-
-        iframe {
-            border-radius: 10px;
-            width: 100%;
-            max-width: 500px;
-            height: 152px;
-        }
-
-        .content-wrapper {
+        .nav-menu {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .nav-item.has-song::before {
+            content: "🎵 ";
+        }
+
+        .main-container {
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
         }
 
         .player-section {
-            text-align: center;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .document-section {
-            margin-top: 20px;
-        }
-
-        .content-wrapper.no-player {
-            grid-template-columns: 1fr;
+        .song-info {
+            margin-bottom: 20px;
         }
 
         .document-frame {
             width: 100%;
-            height: calc(100vh - 250px);
-            min-height: 600px;
+            height: calc(100vh - 400px);
+            min-height: 700px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
-            margin-top: 15px;
-        }
-
-        @media (min-width: 768px) {
-            .content-wrapper {
-                grid-template-columns: 350px 1fr;
-            }
-            
-            .player-section {
-                position: sticky;
-                top: 20px;
-                align-self: start;
-            }
+            background: white;
         }
 
         .suno-iframe {
@@ -134,147 +97,181 @@
             border-radius: 10px;
             max-width: 100%;
         }
+
+        #loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .no-song-message {
+            padding: 20px;
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            color: #856404;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="header">
         <h1>🎵 Syn Songs</h1>
+        <div id="nav-container"></div>
+    </div>
+
+    <div class="main-container">
         <div id="loading">Loading...</div>
         <div id="content" style="display: none;">
-            <div id="song-info" class="song-info">
-                <h3>Now Playing</h3>
-                <p id="document-url" class="document-url"></p>
-            </div>
-            <div class="content-wrapper">
-                <div id="player-section" class="player-section">
-                    <div id="player-container" class="player-container"></div>
+            <div class="player-section">
+                <div id="song-info" class="song-info">
+                    <h3>Now Playing</h3>
+                    <p id="document-url" style="color: #666; font-size: 0.9em; margin-top: 5px;"></p>
                 </div>
-                <div class="document-section">
-                    <h3>Documentation</h3>
-                    <div id="document-frame-container"></div>
-                    <div id="not-found" class="not-found" style="display: none;">
-                        No song found for this URL
-                    </div>
+                <div id="player-container"></div>
+                <div id="no-song" class="no-song-message" style="display: none;">
+                    No song available for this document
                 </div>
             </div>
+            <iframe id="doc-frame" class="document-frame" src="" allow="fullscreen"></iframe>
         </div>
     </div>
 
     <script>
-        let songData = {};
+        let allDocs = [];
 
-        // Convert Suno URL to embed format
-        function convertToEmbedUrl(url) {
-            // Convert https://suno.com/s/ID to https://suno.com/embed/ID
-            if (url && url.includes('suno.com/s/')) {
-                return url.replace('suno.com/s/', 'suno.com/embed/');
-            }
-            return url;
-        }
-
-        // Load the CSV data
-        async function loadSongData() {
+        // Load CSV and build navigation
+        async function loadData() {
             try {
                 const response = await fetch('songz.csv');
                 const csvText = await response.text();
                 const lines = csvText.split('\n').filter(line => line.trim());
                 
-                // Skip header row
+                // Skip header
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i];
-                    const columns = line.split(',');
-                    if (columns.length >= 2) {
-                        const docUrl = columns[0].trim();
-                        const songUrl = columns[1].trim();
-                        if (docUrl && songUrl) {
-                            songData[docUrl] = songUrl;
-                        }
+                    // Parse CSV (handles commas in URLs)
+                    const match = line.match(/^(https:\/\/[^,]+),?(https:\/\/suno\.com\/s\/[^,]*)?$/);
+                    if (match) {
+                        const docUrl = match[1];
+                        const songUrl = match[2] || '';
+                        allDocs.push({ docUrl, songUrl });
                     }
                 }
-                
-                // Parse URL and display song
-                displaySong();
+
+                buildNav();
+                loadFromUrl();
             } catch (error) {
-                console.error('Error loading song data:', error);
-                document.getElementById('loading').innerHTML = 'Error loading song data';
+                console.error('Error loading data:', error);
+                document.getElementById('loading').innerHTML = 'Error loading data';
             }
         }
 
-        function displaySong() {
+        function buildNav() {
+            const navContainer = document.getElementById('nav-container');
+            navContainer.innerHTML = '<div class="nav-menu" id="nav-menu"></div>';
+            const navMenu = document.getElementById('nav-menu');
+            
+            allDocs.forEach(doc => {
+                const navItem = document.createElement('a');
+                navItem.className = 'nav-item' + (doc.songUrl ? ' has-song' : '');
+                navItem.href = '#';
+                navItem.textContent = extractDocTitle(doc.docUrl);
+                navItem.onclick = (e) => {
+                    e.preventDefault();
+                    navigateToDoc(doc.docUrl);
+                };
+                navMenu.appendChild(navItem);
+            });
+        }
+
+        function extractDocTitle(url) {
+            // Extract title from URL like: https://help.synapse.org/docs/About-Synapse.2058846607.html
+            const match = url.match(/docs\/([^.]+)/);
+            if (match) {
+                return match[1].replace(/-/g, ' ');
+            }
+            return url;
+        }
+
+        function loadFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             const docUrl = urlParams.get('doc');
             
-            if (!docUrl) {
-                document.getElementById('loading').innerHTML = 'No document URL provided. Add ?doc=YOUR_URL';
-                return;
+            if (docUrl) {
+                loadDocument(docUrl);
+            } else {
+                // Load first doc by default
+                if (allDocs.length > 0) {
+                    loadDocument(allDocs[0].docUrl);
+                }
             }
+        }
 
-            const songUrl = songData[docUrl];
+        function navigateToDoc(docUrl) {
+            // Update URL without reload
+            const newUrl = `${window.location.pathname}?doc=${encodeURIComponent(docUrl)}`;
+            window.history.pushState({ docUrl }, '', newUrl);
+            loadDocument(docUrl);
+        }
+
+        function loadDocument(docUrl) {
+            const doc = allDocs.find(d => d.docUrl === docUrl);
             
-            // Display content
+            if (!doc) return;
+
             document.getElementById('loading').style.display = 'none';
             document.getElementById('content').style.display = 'block';
+
+            // Update document URL display
             document.getElementById('document-url').textContent = docUrl;
 
-            // Create Suno iframe player if song URL exists
-            if (songUrl) {
-                const playerContainer = document.getElementById('player-container');
-                const embedUrl = convertToEmbedUrl(songUrl);
+            // Load document
+            const docFrame = document.getElementById('doc-frame');
+            docFrame.src = docUrl;
+
+            // Load song if available
+            const playerContainer = document.getElementById('player-container');
+            const noSongDiv = document.getElementById('no-song');
+            playerContainer.innerHTML = '';
+            
+            if (doc.songUrl) {
+                noSongDiv.style.display = 'none';
+                
+                // Convert to embed URL
+                const embedUrl = doc.songUrl.replace('/s/', '/embed/');
                 const iframe = document.createElement('iframe');
                 iframe.src = embedUrl;
-                iframe.allow = 'autoplay';
                 iframe.className = 'suno-iframe';
+                iframe.allow = 'autoplay';
                 playerContainer.appendChild(iframe);
 
                 // Add link to source
                 const linkButton = document.createElement('a');
-                linkButton.href = songUrl;
+                linkButton.href = doc.songUrl;
                 linkButton.target = '_blank';
-                linkButton.className = 'link-button';
+                linkButton.style.display = 'inline-block';
+                linkButton.style.marginTop = '15px';
+                linkButton.style.padding = '10px 20px';
+                linkButton.style.background = '#667eea';
+                linkButton.style.color = 'white';
+                linkButton.style.textDecoration = 'none';
+                linkButton.style.borderRadius = '8px';
                 linkButton.textContent = 'Listen on Suno';
                 playerContainer.appendChild(linkButton);
             } else {
-                // No song found
-                document.getElementById('player-section').style.display = 'none';
-                document.getElementById('song-info').style.display = 'none';
-                document.getElementById('not-found').style.display = 'block';
-                document.querySelector('.content-wrapper').classList.add('no-player');
-            }
-
-            // Embed the document in an iframe
-            const docContainer = document.getElementById('document-frame-container');
-            const docFrame = document.createElement('iframe');
-            docFrame.id = 'doc-frame';
-            docFrame.className = 'document-frame';
-            docFrame.src = docUrl;
-            docFrame.allow = 'fullscreen';
-            docContainer.appendChild(docFrame);
-
-            // Monitor iframe for navigation (limited by cross-origin restrictions)
-            setupNavigationMonitoring();
-        }
-
-        function setupNavigationMonitoring() {
-            const docFrame = document.getElementById('doc-frame');
-            if (!docFrame) return;
-
-            // Due to cross-origin restrictions, we can't directly detect when the iframe navigates.
-            // As a workaround, add a button to open current page in new tab
-            const navButton = document.createElement('button');
-            navButton.className = 'link-button';
-            navButton.textContent = 'Open Current Doc in New Tab';
-            navButton.style.marginTop = '10px';
-            navButton.onclick = () => {
-                window.open(document.getElementById('document-url').textContent, '_blank');
-            };
-            const docSection = document.querySelector('.document-section');
-            if (!docSection.querySelector('button')) {
-                docSection.appendChild(navButton);
+                noSongDiv.style.display = 'block';
             }
         }
+
+        // Handle browser back/forward
+        window.addEventListener('popstate', () => {
+            loadFromUrl();
+        });
 
         // Initialize
-        loadSongData();
+        loadData();
     </script>
 </body>
 </html>
