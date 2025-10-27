@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syn Songs Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .song-info {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .document-url {
+            color: #666;
+            font-size: 0.9em;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        .player-container {
+            margin: 30px 0;
+        }
+
+        .not-found {
+            color: #e74c3c;
+            padding: 20px;
+            background: #ffe5e5;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .link-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .link-button:hover {
+            background: #5568d3;
+        }
+
+        iframe {
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            height: 152px;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .player-section {
+            text-align: center;
+        }
+
+        .document-section {
+            margin-top: 20px;
+        }
+
+        .content-wrapper.no-player {
+            grid-template-columns: 1fr;
+        }
+
+        .document-frame {
+            width: 100%;
+            height: 70vh;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .content-wrapper {
+                grid-template-columns: 400px 1fr;
+            }
+            
+            .player-section {
+                position: sticky;
+                top: 20px;
+                align-self: start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Syn Songs</h1>
+        <div id="loading">Loading...</div>
+        <div id="content" style="display: none;">
+            <div id="song-info" class="song-info">
+                <h3>Now Playing</h3>
+                <p id="document-url" class="document-url"></p>
+            </div>
+            <div class="content-wrapper">
+                <div id="player-section" class="player-section">
+                    <div id="player-container" class="player-container"></div>
+                </div>
+                <div class="document-section">
+                    <h3>Documentation</h3>
+                    <div id="document-frame-container"></div>
+                    <div id="not-found" class="not-found" style="display: none;">
+                        No song found for this URL
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let songData = {};
+
+        // Load the CSV data
+        async function loadSongData() {
+            try {
+                const response = await fetch('songz.csv');
+                const csvText = await response.text();
+                const lines = csvText.split('\n').filter(line => line.trim());
+                
+                // Skip header row
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    const columns = line.split(',');
+                    if (columns.length >= 2) {
+                        const docUrl = columns[0].trim();
+                        const songUrl = columns[1].trim();
+                        if (docUrl && songUrl) {
+                            songData[docUrl] = songUrl;
+                        }
+                    }
+                }
+                
+                // Parse URL and display song
+                displaySong();
+            } catch (error) {
+                console.error('Error loading song data:', error);
+                document.getElementById('loading').innerHTML = 'Error loading song data';
+            }
+        }
+
+        function displaySong() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const docUrl = urlParams.get('doc');
+            
+            if (!docUrl) {
+                document.getElementById('loading').innerHTML = 'No document URL provided. Add ?doc=YOUR_URL';
+                return;
+            }
+
+            const songUrl = songData[docUrl];
+            
+            // Display content
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+            document.getElementById('document-url').textContent = docUrl;
+
+            // Create Suno iframe player if song URL exists
+            if (songUrl) {
+                const playerContainer = document.getElementById('player-container');
+                const iframe = document.createElement('iframe');
+                iframe.src = songUrl;
+                iframe.allow = 'autoplay';
+                iframe.style.border = 'none';
+                playerContainer.appendChild(iframe);
+
+                // Add link to source
+                const linkButton = document.createElement('a');
+                linkButton.href = songUrl;
+                linkButton.target = '_blank';
+                linkButton.className = 'link-button';
+                linkButton.textContent = 'Listen on Suno';
+                playerContainer.appendChild(linkButton);
+            } else {
+                // No song found
+                document.getElementById('player-section').style.display = 'none';
+                document.getElementById('song-info').style.display = 'none';
+                document.getElementById('not-found').style.display = 'block';
+                document.querySelector('.content-wrapper').classList.add('no-player');
+            }
+
+            // Embed the document in an iframe
+            const docContainer = document.getElementById('document-frame-container');
+            const docFrame = document.createElement('iframe');
+            docFrame.className = 'document-frame';
+            docFrame.src = docUrl;
+            docFrame.allow = 'fullscreen';
+            docContainer.appendChild(docFrame);
+        }
+
+        // Initialize
+        loadSongData();
+    </script>
+</body>
+</html>
