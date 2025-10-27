@@ -1,14 +1,14 @@
-document_url,song,
+document_url,song_url,embed
 https://help.synapse.org/docs/API-Clients-and-Documentation.1985446128.html,,
-https://help.synapse.org/docs/About-Synapse.2058846607.html,https://suno.com/s/KECcrbdWEnTTq6qJ,
+https://help.synapse.org/docs/About-Synapse.2058846607.html,https://suno.com/s/KECcrbdWEnTTq6qJ,"<iframe src=""https://suno.com/embed/f8a75eaa-360e-48c4-82f4-3f781efa552c"" width=""760"" height=""240""><a href=""https://suno.com/song/f8a75eaa-360e-48c4-82f4-3f781efa552c"">Listen on Suno</a></iframe>"
 https://help.synapse.org/docs/Annotating-Data-With-Metadata.2667708522.html,,
-https://help.synapse.org/docs/Challenges.1985184148.html,https://suno.com/s/jatEahTHVvNfUSV2,
+https://help.synapse.org/docs/Challenges.1985184148.html,https://suno.com/s/jatEahTHVvNfUSV2,"<iframe src=""https://suno.com/embed/435bdab3-0013-4cf2-9b6b-51a79d61a059"" width=""760"" height=""240""><a href=""https://suno.com/song/435bdab3-0013-4cf2-9b6b-51a79d61a059"">Listen on Suno</a></iframe>"
 https://help.synapse.org/docs/Citing-Data.1972601336.html,,
 https://help.synapse.org/docs/Client-Configuration.1985446156.html,,
 https://help.synapse.org/docs/Cloud-Computing.2048458967.html,,
 https://help.synapse.org/docs/Collaborating-in-Synapse.1985282147.html,,
-https://help.synapse.org/docs/Compute-Directly-on-Data-in-Synapse-or-S3.2048426057.html,,
-https://help.synapse.org/docs/Creating-and-Managing-Wikis.1975746682.html,https://suno.com/s/5utqZ5vN0IIJAw3v,
+https://help.synapse.org/docs/Compute-Directly-on-Data-in-Synapse-or-S3.2048426057.html,https://suno.com/s/dPETG4BY5MCfQAJB,"<iframe src=""https://suno.com/embed/3c353adc-0a95-4932-8669-bdf65fdc6420"" width=""760"" height=""240""><a href=""https://suno.com/song/3c353adc-0a95-4932-8669-bdf65fdc6420"">Listen on Suno</a></iframe>"
+https://help.synapse.org/docs/Creating-and-Managing-Wikis.1975746682.html,https://suno.com/s/5utqZ5vN0IIJAw3v,"<iframe src=""https://suno.com/embed/1d9ba09e-f87c-4c31-8761-df3bace3f2f4"" width=""760"" height=""240""><a href=""https://suno.com/song/1d9ba09e-f87c-4c31-8761-df3bace3f2f4"">Listen on Suno</a></iframe>"
 https://help.synapse.org/docs/Curating-Data.2667937915.html,,
 https://help.synapse.org/docs/Custom-Storage-Locations.2048327803.html,https://suno.com/s/sa63robZ4N15Jd6a,
 https://help.synapse.org/docs/Data-Access-Types.2014904611.html,,

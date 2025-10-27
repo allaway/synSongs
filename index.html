@@ -164,19 +164,20 @@
                 
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i];
-                    const firstCommaIndex = line.indexOf(',');
                     
-                    if (firstCommaIndex > 0) {
-                        const docUrl = line.substring(0, firstCommaIndex).trim();
-                        const rest = line.substring(firstCommaIndex + 1);
-                        const secondCommaIndex = rest.indexOf(',');
-                        let songUrl = secondCommaIndex >= 0 ? rest.substring(0, secondCommaIndex) : rest;
-                        songUrl = songUrl.trim();
+                    // Parse CSV with quoted fields
+                    const fields = parseCSVLine(line);
+                    
+                    if (fields.length >= 1) {
+                        const docUrl = fields[0];
+                        const songUrl = fields.length > 1 ? fields[1] : '';
+                        const embed = fields.length > 2 ? fields[2] : '';
                         
                         if (docUrl && docUrl.startsWith('http')) {
                             allDocs.push({
                                 docUrl: docUrl,
-                                songUrl: songUrl
+                                songUrl: songUrl,
+                                embed: embed
                             });
                         }
                     }
@@ -195,6 +196,34 @@
                 console.error('Error:', error);
                 document.getElementById('loading').innerHTML = 'Error: ' + error.message;
             }
+        }
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = line[i + 1];
+                
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        current += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result;
         }
 
         function buildNav() {
@@ -270,22 +299,19 @@
             const noSongDiv = document.getElementById('no-song');
             playerContainer.innerHTML = '';
             
-            if (doc.songUrl) {
+            if (doc.embed) {
                 noSongDiv.style.display = 'none';
-                const embedUrl = doc.songUrl.replace('/s/', '/embed/');
                 
-                const iframe = document.createElement('iframe');
-                iframe.src = embedUrl;
-                iframe.className = 'suno-iframe';
-                iframe.allow = 'autoplay';
-                playerContainer.appendChild(iframe);
-
-                const linkButton = document.createElement('a');
-                linkButton.href = doc.songUrl;
-                linkButton.target = '_blank';
-                linkButton.className = 'suno-link';
-                linkButton.textContent = 'Listen on Suno';
-                playerContainer.appendChild(linkButton);
+                // Insert the embed HTML directly
+                playerContainer.innerHTML = doc.embed;
+                
+                // Add autoplay to the iframe if not already present
+                setTimeout(function() {
+                    const iframe = playerContainer.querySelector('iframe');
+                    if (iframe && !iframe.src.includes('autoplay=1')) {
+                        iframe.src = iframe.src + (iframe.src.includes('?') ? '&' : '?') + 'autoplay=1';
+                    }
+                }, 100);
             } else {
                 noSongDiv.style.display = 'block';
             }
