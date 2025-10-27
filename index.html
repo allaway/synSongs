@@ -62,7 +62,7 @@
             margin: 20px 0;
         }
 
-        .link-button {
+        .link-button, button.link-button {
             display: inline-block;
             margin-top: 20px;
             padding: 12px 24px;
@@ -71,9 +71,13 @@
             text-decoration: none;
             border-radius: 8px;
             transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-family: inherit;
         }
 
-        .link-button:hover {
+        .link-button:hover, button.link-button:hover {
             background: #5568d3;
         }
 
@@ -87,7 +91,7 @@
         .content-wrapper {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 30px;
+            gap: 20px;
         }
 
         .player-section {
@@ -104,7 +108,8 @@
 
         .document-frame {
             width: 100%;
-            height: 70vh;
+            height: calc(100vh - 250px);
+            min-height: 600px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             margin-top: 15px;
@@ -112,7 +117,7 @@
 
         @media (min-width: 768px) {
             .content-wrapper {
-                grid-template-columns: 400px 1fr;
+                grid-template-columns: 350px 1fr;
             }
             
             .player-section {
@@ -120,6 +125,14 @@
                 top: 20px;
                 align-self: start;
             }
+        }
+
+        .suno-iframe {
+            width: 760px;
+            height: 240px;
+            border: none;
+            border-radius: 10px;
+            max-width: 100%;
         }
     </style>
 </head>
@@ -149,6 +162,15 @@
 
     <script>
         let songData = {};
+
+        // Convert Suno URL to embed format
+        function convertToEmbedUrl(url) {
+            // Convert https://suno.com/s/ID to https://suno.com/embed/ID
+            if (url && url.includes('suno.com/s/')) {
+                return url.replace('suno.com/s/', 'suno.com/embed/');
+            }
+            return url;
+        }
 
         // Load the CSV data
         async function loadSongData() {
@@ -197,10 +219,11 @@
             // Create Suno iframe player if song URL exists
             if (songUrl) {
                 const playerContainer = document.getElementById('player-container');
+                const embedUrl = convertToEmbedUrl(songUrl);
                 const iframe = document.createElement('iframe');
-                iframe.src = songUrl;
+                iframe.src = embedUrl;
                 iframe.allow = 'autoplay';
-                iframe.style.border = 'none';
+                iframe.className = 'suno-iframe';
                 playerContainer.appendChild(iframe);
 
                 // Add link to source
@@ -221,10 +244,33 @@
             // Embed the document in an iframe
             const docContainer = document.getElementById('document-frame-container');
             const docFrame = document.createElement('iframe');
+            docFrame.id = 'doc-frame';
             docFrame.className = 'document-frame';
             docFrame.src = docUrl;
             docFrame.allow = 'fullscreen';
             docContainer.appendChild(docFrame);
+
+            // Monitor iframe for navigation (limited by cross-origin restrictions)
+            setupNavigationMonitoring();
+        }
+
+        function setupNavigationMonitoring() {
+            const docFrame = document.getElementById('doc-frame');
+            if (!docFrame) return;
+
+            // Due to cross-origin restrictions, we can't directly detect when the iframe navigates.
+            // As a workaround, add a button to open current page in new tab
+            const navButton = document.createElement('button');
+            navButton.className = 'link-button';
+            navButton.textContent = 'Open Current Doc in New Tab';
+            navButton.style.marginTop = '10px';
+            navButton.onclick = () => {
+                window.open(document.getElementById('document-url').textContent, '_blank');
+            };
+            const docSection = document.querySelector('.document-section');
+            if (!docSection.querySelector('button')) {
+                docSection.appendChild(navButton);
+            }
         }
 
         // Initialize
