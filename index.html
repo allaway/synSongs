@@ -113,6 +113,21 @@
             color: #856404;
             margin-top: 20px;
         }
+
+        a.suno-link {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        a.suno-link:hover {
+            background: #5568d3;
+        }
     </style>
 </head>
 <body>
@@ -141,29 +156,28 @@
     <script>
         let allDocs = [];
 
-        // Load CSV and build navigation
         async function loadData() {
             try {
                 const response = await fetch('songz.csv');
                 const csvText = await response.text();
                 const lines = csvText.split('\n').filter(line => line.trim());
                 
-                // Skip header
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i];
-                    
-                    // Handle CSV with potentially no song URL
                     const firstCommaIndex = line.indexOf(',');
+                    
                     if (firstCommaIndex > 0) {
                         const docUrl = line.substring(0, firstCommaIndex).trim();
                         const rest = line.substring(firstCommaIndex + 1);
-                        // Get song URL (could be empty)
                         const secondCommaIndex = rest.indexOf(',');
                         let songUrl = secondCommaIndex >= 0 ? rest.substring(0, secondCommaIndex) : rest;
                         songUrl = songUrl.trim();
                         
                         if (docUrl && docUrl.startsWith('http')) {
-                            allDocs.push({ docUrl, songUrl });
+                            allDocs.push({
+                                docUrl: docUrl,
+                                songUrl: songUrl
+                            });
                         }
                     }
                 }
@@ -178,41 +192,34 @@
                 buildNav();
                 loadFromUrl();
             } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('loading').innerHTML = 'Error loading data: ' + error.message;
-            }
-        }
-            } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('loading').innerHTML = 'Error loading data: ' + error.message;
+                console.error('Error:', error);
+                document.getElementById('loading').innerHTML = 'Error: ' + error.message;
             }
         }
 
         function buildNav() {
             const navContainer = document.getElementById('nav-container');
-            navContainer.innerHTML = '<div class="nav-menu" id="nav-menu"></div>';
-            const navMenu = document.getElementById('nav-menu');
+            const navMenu = document.createElement('div');
+            navMenu.className = 'nav-menu';
             
-            if (!navMenu) {
-                console.error('Nav menu not found');
-                return;
-            }
-            
-            allDocs.forEach(doc => {
+            for (let i = 0; i < allDocs.length; i++) {
+                const doc = allDocs[i];
                 const navItem = document.createElement('a');
                 navItem.className = 'nav-item' + (doc.songUrl ? ' has-song' : '');
                 navItem.href = '#';
                 navItem.textContent = extractDocTitle(doc.docUrl);
-                navItem.onclick = (e) => {
+                navItem.onclick = function(e) {
                     e.preventDefault();
                     navigateToDoc(doc.docUrl);
                 };
                 navMenu.appendChild(navItem);
-            });
+            }
+            
+            navContainer.innerHTML = '';
+            navContainer.appendChild(navMenu);
         }
 
         function extractDocTitle(url) {
-            // Extract title from URL like: https://help.synapse.org/docs/About-Synapse.2058846607.html
             const match = url.match(/docs\/([^.]+)/);
             if (match) {
                 return match[1].replace(/-/g, ' ');
@@ -226,65 +233,57 @@
             
             if (docUrl) {
                 loadDocument(docUrl);
-            } else {
-                // Load first doc by default
-                if (allDocs.length > 0) {
-                    loadDocument(allDocs[0].docUrl);
-                } else {
-                    document.getElementById('loading').innerHTML = 'No documents available';
-                }
+            } else if (allDocs.length > 0) {
+                loadDocument(allDocs[0].docUrl);
             }
         }
 
         function navigateToDoc(docUrl) {
-            // Update URL without reload
-            const newUrl = `${window.location.pathname}?doc=${encodeURIComponent(docUrl)}`;
-            window.history.pushState({ docUrl }, '', newUrl);
+            const newUrl = window.location.pathname + '?doc=' + encodeURIComponent(docUrl);
+            window.history.pushState({
+                docUrl: docUrl
+            }, '', newUrl);
             loadDocument(docUrl);
         }
 
         function loadDocument(docUrl) {
-            const doc = allDocs.find(d => d.docUrl === docUrl);
+            let doc = null;
+            for (let i = 0; i < allDocs.length; i++) {
+                if (allDocs[i].docUrl === docUrl) {
+                    doc = allDocs[i];
+                    break;
+                }
+            }
             
-            if (!doc) return;
+            if (!doc) {
+                return;
+            }
 
             document.getElementById('loading').style.display = 'none';
             document.getElementById('content').style.display = 'block';
-
-            // Update document URL display
             document.getElementById('document-url').textContent = docUrl;
 
-            // Load document
             const docFrame = document.getElementById('doc-frame');
             docFrame.src = docUrl;
 
-            // Load song if available
             const playerContainer = document.getElementById('player-container');
             const noSongDiv = document.getElementById('no-song');
             playerContainer.innerHTML = '';
             
             if (doc.songUrl) {
                 noSongDiv.style.display = 'none';
-                
-                // Convert to embed URL
                 const embedUrl = doc.songUrl.replace('/s/', '/embed/');
+                
                 const iframe = document.createElement('iframe');
                 iframe.src = embedUrl;
                 iframe.className = 'suno-iframe';
                 iframe.allow = 'autoplay';
                 playerContainer.appendChild(iframe);
 
-                // Add link to source
                 const linkButton = document.createElement('a');
                 linkButton.href = doc.songUrl;
                 linkButton.target = '_blank';
-                linkButton.style.display = 'inline-block';
-                linkButton.style.marginTop = '15px';
-                linkButton.style.padding = '10px 20px';
-                linkButton.style.background = '#667eea';
-                linkButton.style.color = 'white';
-                linkButton.style.textDecoration = 'none';
-                linkButton.style.borderRadius = '8px';
+                linkButton.className = 'suno-link';
                 linkButton.textContent = 'Listen on Suno';
                 playerContainer.appendChild(linkButton);
             } else {
@@ -292,12 +291,10 @@
             }
         }
 
-        // Handle browser back/forward
-        window.addEventListener('popstate', () => {
+        window.addEventListener('popstate', function() {
             loadFromUrl();
         });
 
-        // Initialize
         loadData();
     </script>
 </body>
